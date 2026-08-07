@@ -63,12 +63,14 @@ def parse_tickets(page: str):
     marked = re.sub(r"(?is)<(script|style)\b.*?</\1>", " ", marked)
     text = re.sub(r"<[^>]+>", "\n", marked)
     text = html.unescape(text)
+    # タグ除去で大量に生じる空行・空白を圧縮する（これをしないと直前の記述に届かない）
+    text = "\n".join(ln for ln in (l.strip() for l in text.split("\n")) if ln)
 
     parts = re.split(r"@@TICKET:(\d+)@@", text)
     tickets = []
     for i in range(1, len(parts), 2):
         ticket_id = parts[i]
-        block = parts[i - 1][-600:]  # そのチケットの直前の記述だけを見る
+        block = parts[i - 1][-400:]  # そのチケットの直前の記述だけを見る
 
         name_matches = re.findall(r"駐車場\s*[0-9０-９]+番[^\n]*", block)
         name = name_matches[-1].strip() if name_matches else f"チケットID {ticket_id}"
