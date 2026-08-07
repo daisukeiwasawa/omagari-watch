@@ -1,0 +1,45 @@
+name: omagari-parking-watch
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"   # 5分ごと（UTC基準。間隔なので時差は無関係）
+  workflow_dispatch:         # 手動実行ボタン用
+
+concurrency:
+  group: omagari-watch
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Restore previous state
+        uses: actions/cache/restore@v4
+        with:
+          path: state.json
+          key: omagari-state-${{ github.run_id }}
+          restore-keys: |
+            omagari-state-
+
+      - name: Check availability
+        env:
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+          # 空きが続く間ずっと通知したい場合は "1" に変更
+          NOTIFY_EVERY_TIME: "0"
+        run: python watch_omagari.py
+
+      - name: Save state
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: state.json
+          key: omagari-state-${{ github.run_id }}
