@@ -37,7 +37,7 @@ SMTP_PASS = os.environ.get("SMTP_PASS")
 MAIL_TO = os.environ.get("MAIL_TO") or SMTP_USER
 NOTIFY_EVERY_TIME = os.environ.get("NOTIFY_EVERY_TIME", "0") == "1"
 
-SOLD_OUT = "完売"
+SOLD_OUT = "完売ZZZ"
 AVAILABLE = "販売中(要確認)"
 
 
